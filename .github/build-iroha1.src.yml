@@ -105,7 +105,7 @@ jobs:
     needs: check_workflow_yaml_coressponds_to_src_yaml
     runs-on: ubuntu-latest #[ self-hosted, Linux ]
     env: &env_dockerhub
-      DOCKERHUB_ORG:      iroha1   ## Must be hyperledger, also can use iroha1, cannot use ${{ secrets.DOCKERHUB_ORG }}
+      DOCKERHUB_ORG:      hyperledger   ## Must be hyperledger, also can use iroha1, cannot use ${{ secrets.DOCKERHUB_ORG }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN:    ${{ secrets.DOCKERHUB_TOKEN }}
     steps:
@@ -399,7 +399,7 @@ jobs:
           _os=${os:+-$os}  _cc=${cc:+-$cc}  _build_type=${build_type:+-$build_type}  _uses=${uses:+-$uses}
           echo >>$GITHUB_ENV  ARTIFACT_SUFFIX=$_os$_cc$_build_type$_uses
           echo >>$GITHUB_ENV  _uses_suffix=$_uses
-          echo >>$GITHUB_ENV  _compiler_suffix=$(test cc != gcc9 && echo $_cc)
+          echo >>$GITHUB_ENV  _compiler_suffix=$(test $cc != gcc9 && echo $_cc)
         #  echo >>$GITHUB_ENV  _os=$_os  _cc=$_cc  _build_type=$_build_type  _uses=$_uses
       - &step_artifact_irohad
         name: Upload artifact irohad
@@ -502,7 +502,7 @@ jobs:
       - *step_cmake_build
       - *step_always_after_build
       - <<: *step_artifact_suffix
-        name: Generate artifact suffix gcc9 >> env.ARTIFACT_SUFFIX
+        name: Generate artifact suffix >> env.ARTIFACT_SUFFIX
         #run: inherited
         env:
           <<: *step_artifact_suffix_env
