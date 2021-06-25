@@ -444,11 +444,8 @@ jobs:
 
           cd build
           ##FIXME enable yac when it were fixed lag
-          ctest --output-on-failure -R '^module_' --parallel 4 --exclude-regex yac_
-          ctest --output-on-failure -R '^module_yac_'
-          ctest --output-on-failure -R '^integration_' --repeat until-pass:3 -E '^integration_fake_peer_example_test$'
-          ctest --output-on-failure -R '^integration_fake_peer_example_test$' || true
-        #FIXME do not CTEST_EXCLUDE
+          ctest --output-on-failure -R '^module_' --parallel 4
+          ctest --output-on-failure -R '^integration_' --repeat until-pass:3
   build-iroha-ubuntu-release:
     needs: Docker-iroha-builder
     runs-on: [self-hosted, Linux] #ubuntu-latest
@@ -640,11 +637,8 @@ jobs:
 
           cd build
           ##FIXME enable yac when it were fixed lag
-          ctest --output-on-failure -R '^module_' --parallel 4 --exclude-regex yac_
-          ctest --output-on-failure -R '^module_yac_'
-          ctest --output-on-failure -R '^integration_' --repeat until-pass:3 -E '^integration_fake_peer_example_test$'
-          ctest --output-on-failure -R '^integration_fake_peer_example_test$' || true
-        #FIXME do not CTEST_EXCLUDE
+          ctest --output-on-failure -R '^module_' --parallel 4
+          ctest --output-on-failure -R '^integration_' --repeat until-pass:3
     strategy:
       fail-fast: false
       matrix:
@@ -833,11 +827,8 @@ jobs:
 
           cd build
           ##FIXME enable yac when it were fixed lag
-          ctest --output-on-failure -R '^module_' --parallel 4 --exclude-regex yac_
-          ctest --output-on-failure -R '^module_yac_'
-          ctest --output-on-failure -R '^integration_' --repeat until-pass:3 -E '^integration_fake_peer_example_test$'
-          ctest --output-on-failure -R '^integration_fake_peer_example_test$' || true
-        #FIXME do not CTEST_EXCLUDE
+          ctest --output-on-failure -R '^module_' --parallel 4
+          ctest --output-on-failure -R '^integration_' --repeat until-pass:3
   build-iroha-windows:
     needs: check_workflow_yaml_coressponds_to_src_yaml
     if: ${{ false }} ##FIXME Somehow cmake fails to find GTest and others

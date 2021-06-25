@@ -438,11 +438,8 @@ jobs:
 
           cd build
           ##FIXME enable yac when it were fixed lag
-          ctest --output-on-failure -R '^module_' --parallel 4 --exclude-regex yac_
-          ctest --output-on-failure -R '^module_yac_'
-          ctest --output-on-failure -R '^integration_' --repeat until-pass:3 -E '^integration_fake_peer_example_test$'
-          ctest --output-on-failure -R '^integration_fake_peer_example_test$' || true
-        #FIXME do not CTEST_EXCLUDE
+          ctest --output-on-failure -R '^module_' --parallel 4
+          ctest --output-on-failure -R '^integration_' --repeat until-pass:3
 
   build-iroha-ubuntu-release:
     <<: *job_ubuntu
