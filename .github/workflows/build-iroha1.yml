@@ -404,12 +404,14 @@ jobs:
           set -x
           cc=$(echo $CC | sed -Ee's,[-/],,g' )
           build_type=$(echo $BuildType | tr A-Z a-z | sed -E -es,debug,dbg, -es,release,rel, )
+          test $build_type = dbg -o $build_type = rel
           uses=$(echo $CMAKE_USE |
             tr ' ' '\n' | sed -nE -e's,.*USE_([a-zA-Z]+)=ON.*,\1,gp ; s, ,-, ;' | xargs | tr ' ' - | tr A-Z a-z )
           _os=${os:+-$os}  _cc=${cc:+-$cc}  _build_type=${build_type:+-$build_type}  _uses=${uses:+-$uses}
           echo >>$GITHUB_ENV  ARTIFACT_SUFFIX=$_os$_cc$_build_type$_uses
           echo >>$GITHUB_ENV  _uses_suffix=$_uses
           echo >>$GITHUB_ENV  _compiler_suffix=$(test $cc != gcc9 && echo $_cc)
+          echo >>$GITHUB_ENV  _debug_suffix=$(test $build_type = dbg && echo -debug || true)
         #  echo >>$GITHUB_ENV  _os=$_os  _cc=$_cc  _build_type=$_build_type  _uses=$_uses
       - name: Upload artifact irohad
         uses: actions/upload-artifact@v2
@@ -598,12 +600,14 @@ jobs:
           set -x
           cc=$(echo $CC | sed -Ee's,[-/],,g' )
           build_type=$(echo $BuildType | tr A-Z a-z | sed -E -es,debug,dbg, -es,release,rel, )
+          test $build_type = dbg -o $build_type = rel
           uses=$(echo $CMAKE_USE |
             tr ' ' '\n' | sed -nE -e's,.*USE_([a-zA-Z]+)=ON.*,\1,gp ; s, ,-, ;' | xargs | tr ' ' - | tr A-Z a-z )
           _os=${os:+-$os}  _cc=${cc:+-$cc}  _build_type=${build_type:+-$build_type}  _uses=${uses:+-$uses}
           echo >>$GITHUB_ENV  ARTIFACT_SUFFIX=$_os$_cc$_build_type$_uses
           echo >>$GITHUB_ENV  _uses_suffix=$_uses
           echo >>$GITHUB_ENV  _compiler_suffix=$(test $cc != gcc9 && echo $_cc)
+          echo >>$GITHUB_ENV  _debug_suffix=$(test $build_type = dbg && echo -debug || true)
         #  echo >>$GITHUB_ENV  _os=$_os  _cc=$_cc  _build_type=$_build_type  _uses=$_uses
       - name: Upload artifact irohad
         uses: actions/upload-artifact@v2
@@ -784,12 +788,14 @@ jobs:
           set -x
           cc=$(echo $CC | sed -Ee's,[-/],,g' )
           build_type=$(echo $BuildType | tr A-Z a-z | sed -E -es,debug,dbg, -es,release,rel, )
+          test $build_type = dbg -o $build_type = rel
           uses=$(echo $CMAKE_USE |
             tr ' ' '\n' | sed -nE -e's,.*USE_([a-zA-Z]+)=ON.*,\1,gp ; s, ,-, ;' | xargs | tr ' ' - | tr A-Z a-z )
           _os=${os:+-$os}  _cc=${cc:+-$cc}  _build_type=${build_type:+-$build_type}  _uses=${uses:+-$uses}
           echo >>$GITHUB_ENV  ARTIFACT_SUFFIX=$_os$_cc$_build_type$_uses
           echo >>$GITHUB_ENV  _uses_suffix=$_uses
           echo >>$GITHUB_ENV  _compiler_suffix=$(test $cc != gcc9 && echo $_cc)
+          echo >>$GITHUB_ENV  _debug_suffix=$(test $build_type = dbg && echo -debug || true)
         #  echo >>$GITHUB_ENV  _os=$_os  _cc=$_cc  _build_type=$_build_type  _uses=$_uses
 
         name: Generate artifact suffix >> env.ARTIFACT_SUFFIX
@@ -974,12 +980,14 @@ jobs:
           set -x
           cc=$(echo $CC | sed -Ee's,[-/],,g' )
           build_type=$(echo $BuildType | tr A-Z a-z | sed -E -es,debug,dbg, -es,release,rel, )
+          test $build_type = dbg -o $build_type = rel
           uses=$(echo $CMAKE_USE |
             tr ' ' '\n' | sed -nE -e's,.*USE_([a-zA-Z]+)=ON.*,\1,gp ; s, ,-, ;' | xargs | tr ' ' - | tr A-Z a-z )
           _os=${os:+-$os}  _cc=${cc:+-$cc}  _build_type=${build_type:+-$build_type}  _uses=${uses:+-$uses}
           echo >>$GITHUB_ENV  ARTIFACT_SUFFIX=$_os$_cc$_build_type$_uses
           echo >>$GITHUB_ENV  _uses_suffix=$_uses
           echo >>$GITHUB_ENV  _compiler_suffix=$(test $cc != gcc9 && echo $_cc)
+          echo >>$GITHUB_ENV  _debug_suffix=$(test $build_type = dbg && echo -debug || true)
         #  echo >>$GITHUB_ENV  _os=$_os  _cc=$_cc  _build_type=$_build_type  _uses=$_uses
       - name: Download artifact
         uses: actions/download-artifact@v2
@@ -1020,7 +1028,7 @@ jobs:
           #flavor: prefix=builder-  ## In case creating repository hyperledger/iroha-builder denied, Use tag prefix hyperledger/iroha:builder-xxxx
 
           images: ${{ env.DOCKERHUB_ORG }}/${{ env.IMAGE_NAME }}${{ env._uses_suffix }} ## uses suffics could be empty, -burrow, -ursa
-          flavor: suffix=${{env._compiler_suffix}}
+          flavor: suffix=${{env._compiler_suffix}}${{env._debug_suffix}}
           #maybetodo flavor: prefix=${{ env.USES_PREFIX }}  ## In case creating repository hyperledger/iroha-burrow denied, Use tag prefix hyperledger/iroha:burrow-xxxx
       - name: Login to DockerHub
         if: ${{ env.DOCKERHUB_TOKEN != '' && env.DOCKERHUB_USERNAME != '' }}
@@ -1059,6 +1067,12 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
   iroha-docker-image-debug:
     runs-on: [self-hosted, Linux] ## or ubuntu-latest
+    #if: matrix.dockerpush == '' || matrix.dockerpush == 'yes'
+    env:
+      DOCKERHUB_ORG: hyperledger ## Must be hyperledger, also can use iroha1, cannot use ${{ secrets.DOCKERHUB_ORG }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      IMAGE_NAME: iroha
     steps:
       - name: Show context
         run: |
@@ -1108,12 +1122,14 @@ jobs:
           set -x
           cc=$(echo $CC | sed -Ee's,[-/],,g' )
           build_type=$(echo $BuildType | tr A-Z a-z | sed -E -es,debug,dbg, -es,release,rel, )
+          test $build_type = dbg -o $build_type = rel
           uses=$(echo $CMAKE_USE |
             tr ' ' '\n' | sed -nE -e's,.*USE_([a-zA-Z]+)=ON.*,\1,gp ; s, ,-, ;' | xargs | tr ' ' - | tr A-Z a-z )
           _os=${os:+-$os}  _cc=${cc:+-$cc}  _build_type=${build_type:+-$build_type}  _uses=${uses:+-$uses}
           echo >>$GITHUB_ENV  ARTIFACT_SUFFIX=$_os$_cc$_build_type$_uses
           echo >>$GITHUB_ENV  _uses_suffix=$_uses
           echo >>$GITHUB_ENV  _compiler_suffix=$(test $cc != gcc9 && echo $_cc)
+          echo >>$GITHUB_ENV  _debug_suffix=$(test $build_type = dbg && echo -debug || true)
         #  echo >>$GITHUB_ENV  _os=$_os  _cc=$_cc  _build_type=$_build_type  _uses=$_uses
       - name: Download artifact
         uses: actions/download-artifact@v2
@@ -1154,7 +1170,7 @@ jobs:
           #flavor: prefix=builder-  ## In case creating repository hyperledger/iroha-builder denied, Use tag prefix hyperledger/iroha:builder-xxxx
 
           images: ${{ env.DOCKERHUB_ORG }}/${{ env.IMAGE_NAME }}${{ env._uses_suffix }} ## uses suffics could be empty, -burrow, -ursa
-          flavor: suffix=${{env._compiler_suffix}}
+          flavor: suffix=${{env._compiler_suffix}}${{env._debug_suffix}}
           #maybetodo flavor: prefix=${{ env.USES_PREFIX }}  ## In case creating repository hyperledger/iroha-burrow denied, Use tag prefix hyperledger/iroha:burrow-xxxx
       - name: Login to DockerHub
         if: ${{ env.DOCKERHUB_TOKEN != '' && env.DOCKERHUB_USERNAME != '' }}
@@ -1201,8 +1217,6 @@ jobs:
         # include:
         #   - { BuildType: Release, CC: gcc-9 }
         #   - { BuildType: Release, CC: gcc-9, CMAKE_USE: -DUSE_BURROW=ON }
-    env:
-      DOCKERHUB_ORG: hyperledger ## Must be hyperledger, also can use iroha1, cannot use ${{ secrets.DOCKERHUB_ORG }}
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      IMAGE_NAME: iroha-debug
+    # env:
+    #   <<: *env_dockerhub_release
+    #   IMAGE_NAME: iroha-debug

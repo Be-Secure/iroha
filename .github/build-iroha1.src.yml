@@ -394,12 +394,14 @@ jobs:
           set -x
           cc=$(echo $CC | sed -Ee's,[-/],,g' )
           build_type=$(echo $BuildType | tr A-Z a-z | sed -E -es,debug,dbg, -es,release,rel, )
+          test $build_type = dbg -o $build_type = rel
           uses=$(echo $CMAKE_USE |
             tr ' ' '\n' | sed -nE -e's,.*USE_([a-zA-Z]+)=ON.*,\1,gp ; s, ,-, ;' | xargs | tr ' ' - | tr A-Z a-z )
           _os=${os:+-$os}  _cc=${cc:+-$cc}  _build_type=${build_type:+-$build_type}  _uses=${uses:+-$uses}
           echo >>$GITHUB_ENV  ARTIFACT_SUFFIX=$_os$_cc$_build_type$_uses
           echo >>$GITHUB_ENV  _uses_suffix=$_uses
           echo >>$GITHUB_ENV  _compiler_suffix=$(test $cc != gcc9 && echo $_cc)
+          echo >>$GITHUB_ENV  _debug_suffix=$(test $build_type = dbg && echo -debug || true)
         #  echo >>$GITHUB_ENV  _os=$_os  _cc=$_cc  _build_type=$_build_type  _uses=$_uses
       - &step_artifact_irohad
         name: Upload artifact irohad
@@ -567,7 +569,7 @@ jobs:
         run: choco install postgresql
       # - *step_ctest
 
-  iroha-docker-image-release: &job_docker_image
+  iroha-docker-image-release: &job_docker_image_release
     needs: build-iroha-ubuntu-release
     runs-on: [ self-hosted, Linux ]  ## or ubuntu-latest
     strategy:
@@ -602,7 +604,7 @@ jobs:
         with:
           <<: *step_docker_meta_with
           images: ${{ env.DOCKERHUB_ORG }}/${{ env.IMAGE_NAME }}${{ env._uses_suffix }}  ## uses suffics could be empty, -burrow, -ursa
-          flavor: suffix=${{env._compiler_suffix}}
+          flavor: suffix=${{env._compiler_suffix}}${{env._debug_suffix}}
           #maybetodo flavor: prefix=${{ env.USES_PREFIX }}  ## In case creating repository hyperledger/iroha-burrow denied, Use tag prefix hyperledger/iroha:burrow-xxxx
       - *step_docker_login
       - *step_warn_docker_no_push
@@ -620,9 +622,9 @@ jobs:
       - *step_docker_move_cache
 
   iroha-docker-image-debug:
-    <<: *job_docker_image
+    <<: *job_docker_image_release
     needs: build-iroha-ubuntu-debug
     strategy: *strategy_ubuntu_debug
-    env:
-      <<: *env_dockerhub_release
-      IMAGE_NAME: iroha-debug
+    # env:
+    #   <<: *env_dockerhub_release
+    #   IMAGE_NAME: iroha-debug
