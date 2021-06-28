@@ -401,7 +401,7 @@ jobs:
           echo >>$GITHUB_ENV  ARTIFACT_SUFFIX=$_os$_cc$_build_type$_uses
           echo >>$GITHUB_ENV  _uses_suffix=$_uses
           echo >>$GITHUB_ENV  _compiler_suffix=$(test $cc != gcc9 && echo $_cc)
-          echo >>$GITHUB_ENV  _debug_suffix=$(test $build_type = dbg && echo -debug || true)
+          echo >>$GITHUB_ENV  _debug_suffix=$(test "$build_type" = dbg && echo -debug || true)
         #  echo >>$GITHUB_ENV  _os=$_os  _cc=$_cc  _build_type=$_build_type  _uses=$_uses
       - &step_artifact_irohad
         name: Upload artifact irohad
@@ -447,8 +447,8 @@ jobs:
       fail-fast: false
       matrix: &matrix_release
         include:
-          - { build_type: Release, CC: gcc-9 }
-          - { build_type: Release, CC: gcc-9, CMAKE_USE: -DUSE_BURROW=ON }
+          - { BuildType: Release, CC: gcc-9 }
+          - { BuildType: Release, CC: gcc-9, CMAKE_USE: -DUSE_BURROW=ON }
         # CC:         [ gcc-9 ] #, gcc-10, clang-10 ]
         # CMAKE_USE:  [ '', -DUSE_BURROW=ON ]
         # build_type: [ Release ]
